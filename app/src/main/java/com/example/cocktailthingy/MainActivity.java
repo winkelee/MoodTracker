@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     static LocalDateTime nextTimeDate;
     static LocalDateTime clickTimeDate;
     static LocalDateTime lastWeekTimeDate;
+    static LocalDateTime lastTimeDate;
     String stringTimeDate;
     static String[] timeDateArray1;
     static String[] timeDateArray2;
@@ -62,10 +63,16 @@ public class MainActivity extends AppCompatActivity {
     static ArrayList<String> nextTimeDateArray;
     static ArrayList<String> clickTimeDateArray;
     static ArrayList<String> lastWeekTimeDateArray;
+    static ArrayList<String> lastTimeDateArray;
     static String currentTimeDateString;
     static String nextTimeDateString;
     static String clickTimeDateString;
+    static String lastTimeDateString;
     static String lastWeekTimeDateString;
+    static String lastClickMonth;
+    static String lastWeekMonth;
+    static String lastClickDate;
+    static String lastWeekDate;
     String partOfDay;
     String nextTimeClick;
     String username;
@@ -91,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
         greeting = findViewById(R.id.welcomeText);
         secondaryTextGraph = findViewById(R.id.secondaryTextGraph);
         moodChooseState = findViewById(R.id.moodChooseState);
+        lastTimeDateArray = new ArrayList<>();
+        lastWeekTimeDateArray = new ArrayList<>();
 
 
 
@@ -99,6 +108,21 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onCreate: TIME: " + currentTimeDate);
         currentTimeDateArray = getTimeDateArray(currentTimeDate);
         nextTimeClick = LoginActivity.settings.getString("nextTime", "default");
+        lastTimeDateString = LoginActivity.settings.getString("clickTime", "default");
+        Log.i(TAG, "onCreate: " + lastTimeDateString);
+        if(!lastTimeDateString.equals("default")){
+            lastTimeDate = LocalDateTime.parse(lastTimeDateString);
+            Log.i(TAG, "onCreate: LASTTIMEDATE " + lastTimeDate);
+            lastWeekTimeDate = lastTimeDate.minusWeeks(1);
+            lastTimeDateArray.addAll(getTimeDateArray(lastTimeDate));
+
+            lastWeekTimeDateArray.addAll(getTimeDateArray(lastWeekTimeDate));
+            lastClickMonth = getMonth(Integer.parseInt(lastTimeDateArray.get(1)));
+            lastWeekMonth = getMonth(Integer.parseInt(lastWeekTimeDateArray.get(1)));
+            lastClickDate = lastTimeDateArray.get(2);
+            lastWeekDate = lastWeekTimeDateArray.get(2);
+            secondaryTextGraph.setText(lastWeekDate + " " + lastWeekMonth + " - " + lastClickDate + " " + lastClickMonth);
+        }
         updateMoodStateString(nextTimeClick);
 
         //stringTimeDate = timeDate.toString();
@@ -128,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
         }
         username = LoginActivity.settings.getString("username", "default");
         greeting.setText("Good " + partOfDay + ", " + username);
-
         //TODO: load the preferences on start.
         LoginActivity.editor = LoginActivity.settings.edit();
         avatarImg = findViewById(R.id.avatarImg); //Loading the avatar
