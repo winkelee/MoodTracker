@@ -46,9 +46,9 @@ public class LoginActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         getSupportActionBar().hide();
         settings = getSharedPreferences(PREFS_NAME, 0);
-        //boolean firstRun = settings.getBoolean("first_run", true);
+        boolean firstRun = settings.getBoolean("first_run", true);
         //boolean firstRun = true;
-        boolean firstRun = false;
+        //boolean firstRun = false;
         username = "default_user";
         usernameEdit = findViewById(R.id.usernameEdit);
         avatar = findViewById(R.id.avatar);

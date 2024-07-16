@@ -110,19 +110,7 @@ public class MainActivity extends AppCompatActivity {
         nextTimeClick = LoginActivity.settings.getString("nextTime", "default");
         lastTimeDateString = LoginActivity.settings.getString("clickTime", "default");
         Log.i(TAG, "onCreate: " + lastTimeDateString);
-        if(!lastTimeDateString.equals("default")){
-            lastTimeDate = LocalDateTime.parse(lastTimeDateString);
-            Log.i(TAG, "onCreate: LASTTIMEDATE " + lastTimeDate);
-            lastWeekTimeDate = lastTimeDate.minusWeeks(1);
-            lastTimeDateArray.addAll(getTimeDateArray(lastTimeDate));
-
-            lastWeekTimeDateArray.addAll(getTimeDateArray(lastWeekTimeDate));
-            lastClickMonth = getMonth(Integer.parseInt(lastTimeDateArray.get(1)));
-            lastWeekMonth = getMonth(Integer.parseInt(lastWeekTimeDateArray.get(1)));
-            lastClickDate = lastTimeDateArray.get(2);
-            lastWeekDate = lastWeekTimeDateArray.get(2);
-            secondaryTextGraph.setText(lastWeekDate + " " + lastWeekMonth + " - " + lastClickDate + " " + lastClickMonth);
-        }
+        updateSecondaryGraph();
         updateMoodStateString(nextTimeClick);
 
         //stringTimeDate = timeDate.toString();
@@ -214,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
                     chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
                 } catch (Exception e){
                     e.printStackTrace();
+                    chooseMood = true;
                 }
                 if(chooseMood){
                     Log.i(TAG, "onClick: BUTTON 1 PRESSED");
@@ -239,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
                     LoginActivity.editor.putString("nextTime", nextTimeDateString);
                     LoginActivity.editor.apply();
                     updateMoodStateString(nextTimeDateString);
+                    updateSecondaryGraph();
                     chart.notifyDataSetChanged();
                     chart.invalidate();
                     setData(values.size(), 5);
@@ -266,6 +256,7 @@ public class MainActivity extends AppCompatActivity {
                     chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
                 } catch (Exception e){
                     e.printStackTrace();
+                    chooseMood = true;
                 }
                 if(chooseMood){
                     Log.i(TAG, "onClick: BUTTON 2 PRESSED");
@@ -291,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
                     LoginActivity.editor.putString("nextTime", nextTimeDateString);
                     LoginActivity.editor.apply();
                     updateMoodStateString(nextTimeDateString);
+                    updateSecondaryGraph();
                     chart.notifyDataSetChanged();
                     chart.invalidate();
                     chart.notifyDataSetChanged();
@@ -317,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
                     chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
                 } catch (Exception e){
                     e.printStackTrace();
+                    chooseMood = true;
                 }
                 if(chooseMood){
                     Log.i(TAG, "onClick: BUTTON 3 PRESSED");
@@ -342,6 +335,7 @@ public class MainActivity extends AppCompatActivity {
                     LoginActivity.editor.putString("nextTime", nextTimeDateString);
                     LoginActivity.editor.apply();
                     updateMoodStateString(nextTimeDateString);
+                    updateSecondaryGraph();
                     chart.invalidate();
                     setData(values.size(), 5);
                     for (int i = 0; i < values.size(); i++){
@@ -366,6 +360,7 @@ public class MainActivity extends AppCompatActivity {
                     chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
                 } catch (Exception e){
                     e.printStackTrace();
+                    chooseMood = true;
                 }
                 if(chooseMood){
                     Log.i(TAG, "onClick: BUTTON 4 PRESSED");
@@ -391,6 +386,7 @@ public class MainActivity extends AppCompatActivity {
                     LoginActivity.editor.putString("nextTime", nextTimeDateString);
                     LoginActivity.editor.apply();
                     updateMoodStateString(nextTimeDateString);
+                    updateSecondaryGraph();
                     chart.invalidate();
                     setData(values.size(), 5);
                     for (int i = 0; i < values.size(); i++){
@@ -415,6 +411,7 @@ public class MainActivity extends AppCompatActivity {
                     chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
                 } catch (Exception e){
                     e.printStackTrace();
+                    chooseMood = true;
                 }
                 if(chooseMood){
                     Log.i(TAG, "onClick: BUTTON 5 PRESSED");
@@ -440,6 +437,7 @@ public class MainActivity extends AppCompatActivity {
                     LoginActivity.editor.putString("nextTime", nextTimeDateString);
                     LoginActivity.editor.apply();
                     updateMoodStateString(nextTimeDateString);
+                    updateSecondaryGraph();
                     chart.invalidate();
                     setData(values.size(), 5);
                     for (int i = 0; i < values.size(); i++){
@@ -668,12 +666,35 @@ public class MainActivity extends AppCompatActivity {
     public void updateMoodStateString(String nextTimeClickString){
         if(!nextTimeClickString.equals("default")){
             LocalDateTime nextTimeClickLDT = LocalDateTime.parse(nextTimeClickString);
-            ArrayList<String> nextTimeClickArray = getTimeDateArray(nextTimeClickLDT);
-            moodChooseState.setText("You can choose your mood at: " + nextTimeClickArray.get(3) + ":" + nextTimeClickArray.get(4) + " on " + nextTimeClickArray.get(2) + "." + nextTimeClickArray.get(1));
+            if(LocalDateTime.now().isAfter(nextTimeClickLDT) == false){
+                ArrayList<String> nextTimeClickArray = getTimeDateArray(nextTimeClickLDT);
+                moodChooseState.setText("You can choose your mood at: " + nextTimeClickArray.get(3) + ":" + nextTimeClickArray.get(4) + " on " + nextTimeClickArray.get(2) + "." + nextTimeClickArray.get(1));
+            } else {
+                moodChooseState.setText(" ");
+            }
         } else{
             moodChooseState.setText(" ");
         }
 
+    }
+
+    public void updateSecondaryGraph(){
+        nextTimeClick = LoginActivity.settings.getString("nextTime", "default");
+        lastTimeDateString = LoginActivity.settings.getString("clickTime", "default");
+        Log.i(TAG, "onCreate: " + lastTimeDateString);
+        if(!lastTimeDateString.equals("default")){
+            lastTimeDate = LocalDateTime.parse(lastTimeDateString);
+            Log.i(TAG, "onCreate: LASTTIMEDATE " + lastTimeDate);
+            lastWeekTimeDate = lastTimeDate.minusWeeks(1);
+            lastTimeDateArray.addAll(getTimeDateArray(lastTimeDate));
+
+            lastWeekTimeDateArray.addAll(getTimeDateArray(lastWeekTimeDate));
+            lastClickMonth = getMonth(Integer.parseInt(lastTimeDateArray.get(1)));
+            lastWeekMonth = getMonth(Integer.parseInt(lastWeekTimeDateArray.get(1)));
+            lastClickDate = lastTimeDateArray.get(2);
+            lastWeekDate = lastWeekTimeDateArray.get(2);
+            secondaryTextGraph.setText(lastWeekDate + " " + lastWeekMonth + " - " + lastClickDate + " " + lastClickMonth);
+        }
     }
 
 }
