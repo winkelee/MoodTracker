@@ -33,6 +33,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -79,8 +80,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Entry> retrievedFromPrefs;
     Boolean chooseMood;
 
-    //TODO: make the buttons pushable only once a day
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,24 +108,12 @@ public class MainActivity extends AppCompatActivity {
         currentTimeDateArray = getTimeDateArray(currentTimeDate);
         nextTimeClick = LoginActivity.settings.getString("nextTime", "default");
         lastTimeDateString = LoginActivity.settings.getString("clickTime", "default");
+        lastTimeDate = LocalDateTime.parse(lastTimeDateString);
         Log.i(TAG, "onCreate: " + lastTimeDateString);
         updateSecondaryGraph();
         updateMoodStateString(nextTimeClick);
 
-        //stringTimeDate = timeDate.toString();
-        //timeDateArray1 = stringTimeDate.split("T"); //Setting current year, month and so on from timeDate
-        //for (int i = 0; i < timeDateArray1.length; i++){
-        //    if(i == 0){
-        //        timeDateArray2 = timeDateArray1[i].split("-");
-        //        currentYear = timeDateArray2[0];
-        //        currentMonth = timeDateArray2[1];
-        //        currentDay = timeDateArray2[2];
-        //    } else if (i == 1){
-        //        timeDateArray2 = timeDateArray1[i].split(":");
-        //        currentHour = timeDateArray2[0];
-        //        currentMinute = timeDateArray2[1];
-        //    }
-        //}
+
         Log.i(TAG, "onCreate: YEAR: " + currentTimeDateArray.get(0) + " MONTH: " + currentTimeDateArray.get(1) + "DAY: " + currentTimeDateArray.get(2) + " HOUR: " + currentTimeDateArray.get(3) + " MINUTE: " + currentTimeDateArray.get(4));
         int currentHourInt = Integer.parseInt(currentTimeDateArray.get(3));
         if(currentHourInt >= 5 && currentHourInt < 12){
@@ -154,6 +141,17 @@ public class MainActivity extends AppCompatActivity {
             retrievedFromPrefs = arrayListFromPrefs("weekValues");
             Log.i(TAG, "onCreate: retrievedFromPrefs: " + true);
             values.addAll(retrievedFromPrefs);
+            int daysPassed = checkSpaces(lastTimeDate, LocalDateTime.now());
+            if (daysPassed > 1){
+                while (daysPassed != 0){
+                    for (int i = 1; i < 7; i++) {
+                        values.set(i - 1, new Entry(i, values.get(i).getY()));
+                    }
+                    // Add the new element at the end
+                    values.set(6, new Entry(7, 1));
+                    daysPassed = daysPassed - 1 ;
+                }
+            }
         } catch (Exception e){
             e.printStackTrace();
             values.add(new Entry(1, 1)); //Default values for the first run
@@ -196,106 +194,14 @@ public class MainActivity extends AppCompatActivity {
         button1.setOnClickListener(new View.OnClickListener() { //Each one of the onClickListeners is bound to an emotion button
             @Override
             public void onClick(View view) {
-                currentTimeDate = LocalDateTime.now();
-                Log.i(TAG, "onClick: NEXT TIME CLICK: " + nextTimeClick);
-                try {
-                    chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
-                } catch (Exception e){
-                    e.printStackTrace();
-                    chooseMood = true;
-                }
-                if(chooseMood){
-                    Log.i(TAG, "onClick: BUTTON 1 PRESSED");
-                    int size = values.size();
-                    if (size < 7) {
-                        values.add(new Entry(size, 1));
-                    } else {
-                        // Shift elements to the left, starting from the second element
-                        for (int i = 1; i < 7; i++) {
-                            values.set(i - 1, new Entry(i, values.get(i).getY()));
-                        }
-                        // Add the new element at the end
-                        values.set(6, new Entry(7, 1));
-                    }
-                    clickTimeDate = LocalDateTime.now();
-                    nextTimeDate = clickTimeDate.plusDays(1);
-                    clickTimeDateArray = getTimeDateArray(clickTimeDate);
-                    nextTimeDateArray = getTimeDateArray(nextTimeDate);
-                    clickTimeDateString = arrayListToLocalDateTimeString(clickTimeDateArray);
-                    nextTimeDateString = arrayListToLocalDateTimeString(nextTimeDateArray);
-                    Log.i(TAG, "onClick: nextTimeDateString: " + nextTimeDateString);
-                    LoginActivity.editor.putString("clickTime", clickTimeDateString);
-                    LoginActivity.editor.putString("nextTime", nextTimeDateString);
-                    LoginActivity.editor.apply();
-                    updateMoodStateString(nextTimeDateString);
-                    updateSecondaryGraph();
-                    chart.notifyDataSetChanged();
-                    chart.invalidate();
-                    setData(values.size(), 5);
-                    for (int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onClick: " + values.get(i));
-                    }
-                    Log.i(TAG, "onClick: ARRAY SIZE" + values.size());
-                    for(int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onStop: SAVING VALUES. VALUE " + i + " EQUALS TO " + values.get(i));
-                    }
-                    arrayListToPrefs("weekValues", values);
-                    Log.i(TAG, "onDestroy: HAPPENED " + true);
-                }
-
-
+                justMakeTheButtonDoTheThing(1);
             }
         });
 
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currentTimeDate = LocalDateTime.now();
-                Log.i(TAG, "onClick: NEXT TIME CLICK: " + nextTimeClick);
-                try {
-                    chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
-                } catch (Exception e){
-                    e.printStackTrace();
-                    chooseMood = true;
-                }
-                if(chooseMood){
-                    Log.i(TAG, "onClick: BUTTON 2 PRESSED");
-                    int size = values.size();
-                    if (size < 7) {
-                        values.add(new Entry(size, 2));
-                    } else {
-                        // Shift elements to the left, starting from the second element
-                        for (int i = 1; i < 7; i++) {
-                            values.set(i - 1, new Entry(i, values.get(i).getY()));
-                        }
-                        // Add the new element at the end
-                        values.set(6, new Entry(7, 2));
-                    }
-                    clickTimeDate = LocalDateTime.now();
-                    nextTimeDate = clickTimeDate.plusDays(1);
-                    clickTimeDateArray = getTimeDateArray(clickTimeDate);
-                    nextTimeDateArray = getTimeDateArray(nextTimeDate);
-                    clickTimeDateString = arrayListToLocalDateTimeString(clickTimeDateArray);
-                    nextTimeDateString = arrayListToLocalDateTimeString(nextTimeDateArray);
-                    Log.i(TAG, "onClick: nextTimeDateString: " + nextTimeDateString);
-                    LoginActivity.editor.putString("clickTime", clickTimeDateString);
-                    LoginActivity.editor.putString("nextTime", nextTimeDateString);
-                    LoginActivity.editor.apply();
-                    updateMoodStateString(nextTimeDateString);
-                    updateSecondaryGraph();
-                    chart.notifyDataSetChanged();
-                    chart.invalidate();
-                    chart.notifyDataSetChanged();
-                    setData(values.size(), 5);
-                    for (int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onClick: " + values.get(i));
-                    }
-                    for(int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onStop: SAVING VALUES. VALUE " + i + " EQUALS TO " + values.get(i));
-                    }
-                    arrayListToPrefs("weekValues", values);
-                    Log.i(TAG, "onDestroy: HAPPENED " + true);
-                }
+                justMakeTheButtonDoTheThing(2);
 
             }
         });
@@ -303,50 +209,7 @@ public class MainActivity extends AppCompatActivity {
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currentTimeDate = LocalDateTime.now();
-                Log.i(TAG, "onClick: NEXT TIME CLICK: " + nextTimeClick);
-                try {
-                    chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
-                } catch (Exception e){
-                    e.printStackTrace();
-                    chooseMood = true;
-                }
-                if(chooseMood){
-                    Log.i(TAG, "onClick: BUTTON 3 PRESSED");
-                    int size = values.size();
-                    if (size < 7) {
-                        values.add(new Entry(size, 3));
-                    } else {
-                        // Shift elements to the left, starting from the second element
-                        for (int i = 1; i < 7; i++) {
-                            values.set(i - 1, new Entry(i, values.get(i).getY()));
-                        }
-                        // Add the new element at the end
-                        values.set(6, new Entry(7, 3));
-                    }
-                    clickTimeDate = LocalDateTime.now();
-                    nextTimeDate = clickTimeDate.plusDays(1);
-                    clickTimeDateArray = getTimeDateArray(clickTimeDate);
-                    nextTimeDateArray = getTimeDateArray(nextTimeDate);
-                    clickTimeDateString = arrayListToLocalDateTimeString(clickTimeDateArray);
-                    nextTimeDateString = arrayListToLocalDateTimeString(nextTimeDateArray);
-                    Log.i(TAG, "onClick: nextTimeDateString: " + nextTimeDateString);
-                    LoginActivity.editor.putString("clickTime", clickTimeDateString);
-                    LoginActivity.editor.putString("nextTime", nextTimeDateString);
-                    LoginActivity.editor.apply();
-                    updateMoodStateString(nextTimeDateString);
-                    updateSecondaryGraph();
-                    chart.invalidate();
-                    setData(values.size(), 5);
-                    for (int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onClick: " + values.get(i));
-                    }
-                    for(int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onStop: SAVING VALUES. VALUE " + i + " EQUALS TO " + values.get(i));
-                    }
-                    arrayListToPrefs("weekValues", values);
-                    Log.i(TAG, "onDestroy: HAPPENED " + true);
-                }
+                justMakeTheButtonDoTheThing(3);
 
             }
         });
@@ -354,50 +217,7 @@ public class MainActivity extends AppCompatActivity {
         button4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currentTimeDate = LocalDateTime.now();
-                Log.i(TAG, "onClick: NEXT TIME CLICK: " + nextTimeClick);
-                try {
-                    chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
-                } catch (Exception e){
-                    e.printStackTrace();
-                    chooseMood = true;
-                }
-                if(chooseMood){
-                    Log.i(TAG, "onClick: BUTTON 4 PRESSED");
-                    int size = values.size();
-                    if (size < 7) {
-                        values.add(new Entry(size, 4));
-                    } else {
-                        // Shift elements to the left, starting from the second element
-                        for (int i = 1; i < 7; i++) {
-                            values.set(i - 1, new Entry(i, values.get(i).getY()));
-                        }
-                        // Add the new element at the end
-                        values.set(6, new Entry(7, 4));
-                    }
-                    clickTimeDate = LocalDateTime.now();
-                    nextTimeDate = clickTimeDate.plusDays(1);
-                    clickTimeDateArray = getTimeDateArray(clickTimeDate);
-                    nextTimeDateArray = getTimeDateArray(nextTimeDate);
-                    clickTimeDateString = arrayListToLocalDateTimeString(clickTimeDateArray);
-                    nextTimeDateString = arrayListToLocalDateTimeString(nextTimeDateArray);
-                    Log.i(TAG, "onClick: nextTimeDateString: " + nextTimeDateString);
-                    LoginActivity.editor.putString("clickTime", clickTimeDateString);
-                    LoginActivity.editor.putString("nextTime", nextTimeDateString);
-                    LoginActivity.editor.apply();
-                    updateMoodStateString(nextTimeDateString);
-                    updateSecondaryGraph();
-                    chart.invalidate();
-                    setData(values.size(), 5);
-                    for (int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onClick: " + values.get(i));
-                    }
-                    for(int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onStop: SAVING VALUES. VALUE " + i + " EQUALS TO " + values.get(i));
-                    }
-                    arrayListToPrefs("weekValues", values);
-                    Log.i(TAG, "onDestroy: HAPPENED " + true);
-                }
+                justMakeTheButtonDoTheThing(4);
 
             }
         });
@@ -405,50 +225,7 @@ public class MainActivity extends AppCompatActivity {
         button5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currentTimeDate = LocalDateTime.now();
-                Log.i(TAG, "onClick: NEXT TIME CLICK: " + nextTimeClick);
-                try {
-                    chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
-                } catch (Exception e){
-                    e.printStackTrace();
-                    chooseMood = true;
-                }
-                if(chooseMood){
-                    Log.i(TAG, "onClick: BUTTON 5 PRESSED");
-                    int size = values.size();
-                    if (size < 7) {
-                        values.add(new Entry(size, 5));
-                    } else {
-                        // Shift elements to the left, starting from the second element
-                        for (int i = 1; i < 7; i++) {
-                            values.set(i - 1, new Entry(i, values.get(i).getY()));
-                        }
-                        // Add the new element at the end
-                        values.set(6, new Entry(7, 5));
-                    }
-                    clickTimeDate = LocalDateTime.now();
-                    nextTimeDate = clickTimeDate.plusDays(1);
-                    clickTimeDateArray = getTimeDateArray(clickTimeDate);
-                    nextTimeDateArray = getTimeDateArray(nextTimeDate);
-                    clickTimeDateString = arrayListToLocalDateTimeString(clickTimeDateArray);
-                    nextTimeDateString = arrayListToLocalDateTimeString(nextTimeDateArray);
-                    Log.i(TAG, "onClick: nextTimeDateString: " + nextTimeDateString);
-                    LoginActivity.editor.putString("clickTime", clickTimeDateString);
-                    LoginActivity.editor.putString("nextTime", nextTimeDateString);
-                    LoginActivity.editor.apply();
-                    updateMoodStateString(nextTimeDateString);
-                    updateSecondaryGraph();
-                    chart.invalidate();
-                    setData(values.size(), 5);
-                    for (int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onClick: " + values.get(i));
-                    }
-                    for(int i = 0; i < values.size(); i++){
-                        Log.i(TAG, "onStop: SAVING VALUES. VALUE " + i + " EQUALS TO " + values.get(i));
-                    }
-                    arrayListToPrefs("weekValues", values);
-                    Log.i(TAG, "onDestroy: HAPPENED " + true);
-                }
+                justMakeTheButtonDoTheThing(5);
 
             }
         });
@@ -678,11 +455,19 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void updateSecondaryGraphOnClick(){
+        LocalDateTime rightNow = LocalDateTime.now();
+        ArrayList rightNowArray = getTimeDateArray(rightNow);
+        LocalDateTime lastWeek = rightNow.minusDays(7);
+        ArrayList lastWeekArray = getTimeDateArray(lastWeek);
+        secondaryTextGraph.setText(lastWeekArray.get(2) + " " + getMonth(Integer.parseInt(lastWeekArray.get(1).toString())) + " - " + rightNowArray.get(2) + " " + getMonth(Integer.parseInt(rightNowArray.get(1).toString())));
+    }
+
     public void updateSecondaryGraph(){
         nextTimeClick = LoginActivity.settings.getString("nextTime", "default");
         lastTimeDateString = LoginActivity.settings.getString("clickTime", "default");
         Log.i(TAG, "onCreate: " + lastTimeDateString);
-        if(!lastTimeDateString.equals("default")){
+        if(!lastTimeDateString.equals("default") && !nextTimeClick.equals("default")){
             lastTimeDate = LocalDateTime.parse(lastTimeDateString);
             Log.i(TAG, "onCreate: LASTTIMEDATE " + lastTimeDate);
             lastWeekTimeDate = lastTimeDate.minusWeeks(1);
@@ -695,6 +480,68 @@ public class MainActivity extends AppCompatActivity {
             lastWeekDate = lastWeekTimeDateArray.get(2);
             secondaryTextGraph.setText(lastWeekDate + " " + lastWeekMonth + " - " + lastClickDate + " " + lastClickMonth);
         }
+    }
+
+    public int checkSpaces(LocalDateTime lastClick, LocalDateTime thisClick){
+        LocalDate lastClickDate = lastClick.toLocalDate();
+        Log.i(TAG, "checkSpaces: lastClickDate: " + lastClickDate);
+        LocalDate thisClickDate = thisClick.toLocalDate();
+        Log.i(TAG, "checkSpaces: thisClickDate: " + thisClickDate);
+        java.time.Period period = java.time.Period.between(lastClickDate, thisClickDate);
+        Log.i(TAG, "checkSpaces: period: " + period);
+        int result = period.getDays();
+        Log.i(TAG, "checkSpaces: result: " + result);
+        return result;
+    }
+
+    public void justMakeTheButtonDoTheThing(int yValue){ //Do I know I could have gone for an OnClick function? Yes.
+        currentTimeDate = LocalDateTime.now();           //Am I going to rewrite my code for an OnClick method? No.
+        Log.i(TAG, "onClick: NEXT TIME CLICK: " + nextTimeClick); //"Why?" - you may ask.
+        try {                                                          //The answer is simple, actually - I wanna have fun with this project.
+            chooseMood = currentTimeDate.isAfter(LocalDateTime.parse(LoginActivity.settings.getString("nextTime", "default")));
+        } catch (Exception e){
+            e.printStackTrace();
+            chooseMood = true;
+        }
+        if(chooseMood){
+            Log.i(TAG, "onClick: BUTTON 1 PRESSED");
+            int size = values.size();
+            if (size < 7) {
+                values.add(new Entry(size, 1));
+            } else {
+                // Shift elements to the left, starting from the second element
+                for (int i = 1; i < 7; i++) {
+                    values.set(i - 1, new Entry(i, values.get(i).getY()));
+                }
+                // Add the new element at the end
+                values.set(6, new Entry(7, yValue));
+            }
+            clickTimeDate = LocalDateTime.now();
+            nextTimeDate = clickTimeDate.plusDays(1);
+            clickTimeDateArray = getTimeDateArray(clickTimeDate);
+            nextTimeDateArray = getTimeDateArray(nextTimeDate);
+            clickTimeDateString = arrayListToLocalDateTimeString(clickTimeDateArray);
+            nextTimeDateString = arrayListToLocalDateTimeString(nextTimeDateArray);
+            Log.i(TAG, "onClick: nextTimeDateString: " + nextTimeDateString);
+            LoginActivity.editor.putString("clickTime", clickTimeDateString);
+            LoginActivity.editor.putString("nextTime", nextTimeDateString);
+            LoginActivity.editor.apply();
+            updateMoodStateString(nextTimeDateString);
+            updateSecondaryGraphOnClick();
+            chart.notifyDataSetChanged();
+            chart.invalidate();
+            setData(values.size(), 5);
+            for (int i = 0; i < values.size(); i++){
+                Log.i(TAG, "onClick: " + values.get(i));
+            }
+            Log.i(TAG, "onClick: ARRAY SIZE" + values.size());
+            for(int i = 0; i < values.size(); i++){
+                Log.i(TAG, "onStop: SAVING VALUES. VALUE " + i + " EQUALS TO " + values.get(i));
+            }
+            arrayListToPrefs("weekValues", values);
+            Log.i(TAG, "onDestroy: HAPPENED " + true);
+        }
+
     }
 
 }
